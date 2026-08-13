@@ -1,0 +1,311 @@
+/**
+ * Csupor Craft Beer — brand theme layer.
+ *
+ * This file overrides the semantic tokens emitted by `cef design tokens` in
+ * globals.css. The generated primitive scale stays untouched so a future
+ * `cef generate` can regenerate it without clobbering brand decisions.
+ *
+ * Palette rule (brief §7): black / white / warm gray, with gold as an ACCENT.
+ * Gold never carries body text on a light surface — it fails AA there
+ * (#E69137 on white is 2.48:1). Two golds exist for that reason:
+ *
+ *   --gold      #E69137  7.79:1 on ink   → text + accents on dark surfaces
+ *   --gold-ink  #96560F  5.78:1 on white → the rare gold text on light
+ *
+ * Neutrals are warmed off the generated slate ramp, which is blue-tinted and
+ * reads cold next to this photography.
+ */
+
+:root {
+  /* ---- brand primitives ------------------------------------------------ */
+  --ink: 14 14 13; /* #0E0E0D  warm near-black */
+  --ink-raised: 26 26 24; /* #1A1A18  raised panel on dark */
+  --ink-line: 44 43 40; /* #2C2B28  hairline on dark */
+
+  --paper: 255 255 255; /* #FFFFFF */
+  --paper-warm: 246 244 240; /* #F6F4F0  warm paper surface */
+  --paper-raised: 255 255 255;
+  --paper-line: 228 223 215; /* #E4DFD7 */
+
+  --stone-100: 233 229 222;
+  --stone-300: 201 196 186; /* #C9C4BA  muted text on dark — 9.1:1 on ink */
+  --stone-600: 92 87 79; /* #5C574F  muted text on light — 7.2:1 on white */
+
+  --gold: 230 145 55; /* #E69137  the brief's secondary colour */
+  --gold-ink: 150 86 15; /* #96560F  AA-safe gold text on light */
+  --gold-wash: 252 244 234; /* #FCF4EA  faint gold tint surface */
+
+  /* ---- semantic tokens (light is the default surface) ------------------ */
+  --cef-background-rgb: var(--paper);
+  --cef-background: rgb(var(--cef-background-rgb));
+  --cef-surface-rgb: var(--paper-warm);
+  --cef-surface: rgb(var(--cef-surface-rgb));
+  --cef-surface-raised-rgb: var(--paper-raised);
+  --cef-surface-raised: rgb(var(--cef-surface-raised-rgb));
+  --cef-foreground-rgb: var(--ink);
+  --cef-foreground: rgb(var(--cef-foreground-rgb));
+  --cef-muted-rgb: var(--stone-600);
+  --cef-muted: rgb(var(--cef-muted-rgb));
+  --cef-border-rgb: var(--paper-line);
+  --cef-border: rgb(var(--cef-border-rgb));
+
+  /* Primary action is ink, not gold: gold as the dominant CTA colour would
+     make it the loudest thing on every page, which §7 rules out. */
+  --cef-primary-rgb: var(--ink);
+  --cef-primary: rgb(var(--cef-primary-rgb));
+  --cef-primary-foreground-rgb: var(--paper);
+  --cef-primary-foreground: rgb(var(--cef-primary-foreground-rgb));
+
+  --cef-accent-rgb: var(--gold);
+  --cef-accent: rgb(var(--cef-accent-rgb));
+  --cef-accent-foreground-rgb: var(--ink);
+  --cef-accent-foreground: rgb(var(--cef-accent-foreground-rgb));
+
+  --cef-focus-rgb: var(--ink);
+  --cef-focus: rgb(var(--cef-focus-rgb));
+
+  --cef-success-rgb: 21 106 58;
+  --cef-success: rgb(var(--cef-success-rgb));
+  --cef-warning-rgb: 150 86 15;
+  --cef-warning: rgb(var(--cef-warning-rgb));
+  --cef-danger-rgb: 176 32 32;
+  --cef-danger: rgb(var(--cef-danger-rgb));
+  --cef-info-rgb: 30 84 112;
+  --cef-info: rgb(var(--cef-info-rgb));
+
+  /* ---- type ------------------------------------------------------------ */
+  --cef-font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --cef-font-display: var(--font-archivo), 'Arial Black', system-ui, sans-serif;
+
+  /* The generated modular scale tops out far too large for a 4-page site and
+     its small end (0.563rem) is unreadable. Retuned to a usable range. */
+  --cef-text-xs: 0.75rem;
+  --cef-leading-xs: 1.45;
+  --cef-text-sm: 0.875rem;
+  --cef-leading-sm: 1.5;
+  --cef-text-base: 1rem;
+  --cef-leading-base: 1.65;
+  --cef-text-lg: 1.125rem;
+  --cef-leading-lg: 1.6;
+  --cef-text-xl: 1.375rem;
+  --cef-leading-xl: 1.4;
+  --cef-text-2xl: 1.75rem;
+  --cef-leading-2xl: 1.25;
+  --cef-text-3xl: 2.25rem;
+  --cef-leading-3xl: 1.12;
+  --cef-text-4xl: 3rem;
+  --cef-leading-4xl: 1.04;
+  --cef-text-5xl: 4rem;
+  --cef-leading-5xl: 0.98;
+  --cef-text-6xl: 5.25rem;
+  --cef-leading-6xl: 0.94;
+  --cef-text-7xl: 6.5rem;
+  --cef-leading-7xl: 0.92;
+
+  /* ---- shape ----------------------------------------------------------- */
+  /* Nearly square. A craft brewery is timber, steel and enamel signage — not
+     a SaaS dashboard. Radius is a 2px whisper, never a pill (brief §14). */
+  --cef-radius-sm: 1px;
+  --cef-radius-md: 2px;
+  --cef-radius-lg: 2px;
+  --cef-radius-xl: 3px;
+  --cef-radius-2xl: 4px;
+
+  /* Shadows are warm and shallow; the design leans on borders and surface
+     changes for elevation instead. */
+  --cef-shadow-sm: 0 1px 2px 0 rgb(14 14 13 / 0.06);
+  --cef-shadow-md: 0 2px 8px -2px rgb(14 14 13 / 0.1);
+  --cef-shadow-lg: 0 12px 32px -12px rgb(14 14 13 / 0.22);
+  --cef-shadow-xl: 0 24px 60px -24px rgb(14 14 13 / 0.28);
+  --cef-shadow-2xl: 0 32px 80px -28px rgb(14 14 13 / 0.35);
+
+  --cef-container-xl: 1200px;
+}
+
+/**
+ * Dark sections are a layout tool here, not a user preference: the page
+ * alternates light and dark bands (brief §7). `.on-dark` re-points the same
+ * semantic tokens at the ink palette, so every component inside simply works
+ * without dark-specific variants.
+ */
+.on-dark {
+  --cef-background-rgb: var(--ink);
+  --cef-background: rgb(var(--cef-background-rgb));
+  --cef-surface-rgb: var(--ink-raised);
+  --cef-surface: rgb(var(--cef-surface-rgb));
+  --cef-surface-raised-rgb: var(--ink-raised);
+  --cef-surface-raised: rgb(var(--cef-surface-raised-rgb));
+  --cef-foreground-rgb: 245 243 239;
+  --cef-foreground: rgb(var(--cef-foreground-rgb));
+  --cef-muted-rgb: var(--stone-300);
+  --cef-muted: rgb(var(--cef-muted-rgb));
+  --cef-border-rgb: var(--ink-line);
+  --cef-border: rgb(var(--cef-border-rgb));
+
+  --cef-primary-rgb: var(--gold);
+  --cef-primary: rgb(var(--cef-primary-rgb));
+  --cef-primary-foreground-rgb: var(--ink);
+  --cef-primary-foreground: rgb(var(--cef-primary-foreground-rgb));
+
+  --cef-accent-rgb: var(--gold);
+  --cef-accent: rgb(var(--cef-accent-rgb));
+
+  --cef-focus-rgb: var(--gold);
+  --cef-focus: rgb(var(--cef-focus-rgb));
+
+  --cef-danger-rgb: 248 113 113;
+  --cef-danger: rgb(var(--cef-danger-rgb));
+  --cef-success-rgb: 110 200 145;
+  --cef-success: rgb(var(--cef-success-rgb));
+
+  color-scheme: dark;
+}
+
+/*
+ * Re-pointing the tokens is not enough on its own: `color` is inherited as a
+ * computed value, so text inside a dark band would keep the ink colour it
+ * inherited from <body> unless the colour is re-declared here. Wrapped in
+ * :where() so it carries zero specificity and any `text-*` utility still wins.
+ */
+:where(.on-dark) {
+  color: rgb(var(--cef-foreground-rgb));
+}
+
+/* --------------------------------------------------------------------------
+   Base element styling
+   -------------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  font-family: var(--cef-font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* One visible focus treatment everywhere, high contrast on both surfaces. */
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--cef-focus-rgb));
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+::selection {
+  background: rgb(var(--gold) / 0.28);
+  color: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   Typography primitives
+   -------------------------------------------------------------------------- */
+
+/* These are wrapped in :where() so their specificity is zero and any Tailwind
+   utility (tracking-*, leading-*, text-*, normal-case) overrides them without
+   needing `!important`. theme.css loads after globals.css, so without this the
+   component classes would beat the utilities. */
+:where(.font-display) {
+  font-family: var(--cef-font-display);
+  font-weight: 400; /* Archivo Black ships a single weight */
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  text-transform: uppercase;
+
+  /*
+   * Hungarian compounds long words ("raklapasztal", "összeszedtünk") and
+   * Archivo Black is a wide face, so a single word can be wider than a 320px
+   * screen. `hyphens` breaks them properly using the hu patterns the <html
+   * lang="hu"> declares; `overflow-wrap` is the hard backstop for anything the
+   * hyphenator will not break — including beer names typed into the admin
+   * panel, which we cannot predict.
+   */
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* Small uppercase label used above section headings. */
+:where(.eyebrow) {
+  font-size: var(--cef-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--cef-muted-rgb));
+}
+
+/* --------------------------------------------------------------------------
+   Motion — scroll reveal
+   Elements start hidden only when JS has flagged support, so a no-JS or
+   crawler render shows fully-visible content.
+   -------------------------------------------------------------------------- */
+
+[data-reveal] {
+  opacity: 1;
+}
+
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 620ms var(--cef-ease-decelerate),
+    transform 620ms var(--cef-ease-decelerate);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+html.js [data-reveal][data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Slow, subtle scale-down on hero media. Purely decorative, so it is dropped
+   entirely under reduced-motion. */
+@keyframes kenburns {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+:where(.animate-kenburns) {
+  animation: kenburns 14s var(--cef-ease-decelerate) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.animate-kenburns) {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Texture — a very low-opacity grain over dark photographic panels.
+   It hides the banding that comes from upscaling the supplied 680px photos
+   and gives the dark bands a printed feel rather than a flat digital one.
+   -------------------------------------------------------------------------- */
+
+:where(.grain)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}

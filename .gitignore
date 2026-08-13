@@ -1,0 +1,19 @@
+node_modules
+.next
+out
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+
+# Runtime beer store. Lives on a Docker volume in production; locally this is
+# scratch data and must not be committed.
+/data
+
+# Intermediate crops produced by `pnpm assets` from assets/source.
+# The shipped output in public/images IS committed, so the Docker build does
+# not need sharp or the originals.
+/assets/derived
+
+# Playwright validation output (screenshots + report)
+/.validation

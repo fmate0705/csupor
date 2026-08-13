@@ -1,0 +1,36 @@
+{
+  "projectName": "csupor-craft-beer",
+  "reviewedAt": "2026-08-08T21:29:49.793Z",
+  "overall": 84,
+  "readiness": 78,
+  "recommendation": "conditional",
+  "requiredPassed": true,
+  "byGate": {
+    "architecture": 100,
+    "design": 100,
+    "accessibility": 100,
+    "performance": 100,
+    "seo": 35,
+    "security": 100,
+    "content": 59,
+    "brand": 99,
+    "legal": 10,
+    "docker": 100,
+    "testing": 100,
+    "documentation": 100
+  },
+  "gateStatus": {
+    "architecture": "pass",
+    "design": "pass",
+    "accessibility": "pass",
+    "performance": "pass",
+    "seo": "warn",
+    "security": "pass",
+    "content": "warn",
+    "brand": "pass",
+    "legal": "warn",
+    "docker": "pass",
+    "testing": "pass",
+    "documentation": "pass"
+  }
+}

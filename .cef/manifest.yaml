@@ -1,0 +1,91 @@
+frameworkVersion: 2
+project:
+  name: csupor-craft-beer
+  type: landing-page
+  created: 2026-08-08T19:24:23.868Z
+  cefVersion: 0.1.0
+engines:
+  - accessibility
+  - ai-seo
+  - architecture
+  - components
+  - core
+  - deployment
+  - design
+  - docker
+  - experience
+  - legal
+  - motion
+  - performance
+  - platform
+  - security
+  - seo
+  - validation
+skills:
+  - emil-frontend-design
+  - emil-motion
+  - frontend-design
+  - taste
+  - uiux-pro-max
+mcp:
+  - chrome-devtools
+  - higgsfield
+metadata:
+  description: >-
+    Csupor Craft Beer Sorfozde is a small independent craft brewery, taproom and
+    outdoor terrace venue in Hatvan, Hungary, brewing since 2014. Hospitality
+    site for a restaurant-like local venue: it presents the rotating beer
+    selection, tells the brewery story, and drives visits to the taproom with
+    opening hours, location, maps directions and a click-to-call phone number.
+    A small JWT-protected admin panel lets staff maintain the beer list.
+  framework: nextjs
+  language: typescript
+  packageManager: pnpm
+  styling: tailwind
+  uiLibrary: shadcn
+  animation: framer-motion
+  database: none
+  orm: none
+  authentication: jwt
+  cms: none
+  designPreset: editorial
+docker:
+  enabled: true
+  port: 3000
+features:
+  adminPanel: true
+  blog: false
+  commerce: false
+  legalPages: true
+  aiSeo: true
+  githubActions: true
+deployment:
+  target: docker
+languages:
+  primary: hu
+  additional: []
+  country: HU
+generatedFiles:
+  - .cef/manifest.yaml
+  - .cef/memory.md
+  - .cef/project.json
+  - .cef/runtime.json
+  - .editorconfig
+  - .env
+  - .env.example
+  - .github/workflows/ci.yml
+  - .gitignore
+  - .prettierignore
+  - .prettierrc.json
+  - CLAUDE.md
+  - Dockerfile
+  - README.md
+  - content/legal/cookie-policy.md
+  - content/legal/impressum.md
+  - content/legal/privacy-policy.md
+  - content/legal/terms.md
+  - docker-compose.yml
+  - eslint.config.js
+  - package.json
+  - public/llms.txt
+  - tsconfig.json

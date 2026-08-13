@@ -1,0 +1,59 @@
+{
+  "pages": [
+    {
+      "id": "home",
+      "name": "Kezdolap",
+      "purpose": "Show what Csupor is in seconds and drive a visit to the taproom.",
+      "priority": "critical",
+      "seoImportance": "high",
+      "sections": ["hero", "intro", "beers-teaser", "taproom", "awards", "visit-cta"],
+      "components": ["navbar", "hero", "card", "cta", "footer"],
+      "dependencies": [],
+      "rationale": "The strongest page: it must answer \"what is this place\" and \"should I go\" without a scroll commitment."
+    },
+    {
+      "id": "sorok",
+      "name": "Soreink",
+      "purpose": "Present the rotating beer selection with style, ABV and tasting notes.",
+      "priority": "critical",
+      "seoImportance": "high",
+      "sections": ["intro", "beer-list"],
+      "components": ["navbar", "card", "footer"],
+      "dependencies": ["home"],
+      "rationale": "Second-highest visitor intent. Data-driven from the admin-managed beer store so it can change weekly."
+    },
+    {
+      "id": "sorfozde",
+      "name": "A Sorfozde",
+      "purpose": "Tell the brewery story, the craft process and the awards.",
+      "priority": "high",
+      "seoImportance": "medium",
+      "sections": ["story", "process", "awards"],
+      "components": ["navbar", "cta", "footer"],
+      "dependencies": ["home"],
+      "rationale": "Credibility page. Absorbs the gallery: the brewery photography is art-directed into the story instead of dumped into a grid."
+    },
+    {
+      "id": "latogatas",
+      "name": "Latogatas",
+      "purpose": "Convert interest into a visit: hours, address, directions, phone, amenities.",
+      "priority": "critical",
+      "seoImportance": "high",
+      "sections": ["taproom", "terrace", "practical-info", "location"],
+      "components": ["navbar", "card", "cta", "footer"],
+      "dependencies": ["home"],
+      "rationale": "The single conversion page. Absorbs Contact and replaces Reservations: this venue takes walk-ins and phone calls, not bookings."
+    },
+    {
+      "id": "impresszum",
+      "name": "Impresszum es adatkezeles",
+      "purpose": "Required legal disclosures and privacy information.",
+      "priority": "medium",
+      "seoImportance": "low",
+      "sections": ["policy"],
+      "components": ["footer"],
+      "dependencies": ["home"],
+      "rationale": "Legal is a CEF non-negotiable. Combined into one footer-linked page to respect the 4-page main navigation limit."
+    }
+  ]
+}

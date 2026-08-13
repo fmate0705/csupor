@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.cef
+assets
+data
+docs
+tests
+npm-debug.log*
+Dockerfile
+.dockerignore
+README.md

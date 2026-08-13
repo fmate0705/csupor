@@ -1,0 +1,73 @@
+# Csupor Craft Beer — production stack.
+#
+# Conforms to CEF standards/operations/docker-compose.md and docker.md:
+#   ODK-08 container named <project>-<service>   ODK-09 network <project>-network
+#   ODK-10 named volume for durable data         ODK-11 restart policy
+#   ODK-12 resource limits                       DCP-03 secrets from .env
+#   DCP-07 healthcheck                           DCP-10 only the web service published
+#
+# One command from a clean checkout:  docker compose up -d --build
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: csupor-craft-beer:latest
+    container_name: csupor-web
+    restart: unless-stopped
+
+    # Secrets and configuration are injected at runtime, never baked into the
+    # image (ODK-07). Copy .env.example to .env before the first run.
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+      DATA_DIR: /data
+
+    ports:
+      - '3000:3000'
+
+    # The beer list must survive a redeploy — the container filesystem must not
+    # hold durable state (ODK-10).
+    volumes:
+      - csupor-data:/data
+
+    networks:
+      - csupor-network
+
+    healthcheck:
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+    # A single container must not be able to exhaust the host (ODK-12).
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 128M
+
+    # Logs go to stdout/stderr and are capped so they cannot fill the disk
+    # (ODK-16).
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  csupor-data:
+    name: csupor-data
+
+networks:
+  csupor-network:
+    name: csupor-network
+    driver: bridge

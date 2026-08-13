@@ -1,0 +1,165 @@
+{
+  "issues": [
+    {
+      "id": "seo-1",
+      "gate": "seo",
+      "severity": "major",
+      "message": "Missing SEO artifact \"public/manifest.webmanifest\".",
+      "file": "public/manifest.webmanifest"
+    },
+    {
+      "id": "seo-2",
+      "gate": "seo",
+      "severity": "major",
+      "message": "Missing SEO artifact \"public/llms.txt\".",
+      "file": "public/llms.txt"
+    },
+    {
+      "id": "seo-3",
+      "gate": "seo",
+      "severity": "minor",
+      "message": "Missing SEO artifact \"public/humans.txt\".",
+      "file": "public/humans.txt"
+    },
+    {
+      "id": "seo-4",
+      "gate": "seo",
+      "severity": "minor",
+      "message": "Missing SEO artifact \"public/security.txt\".",
+      "file": "public/security.txt"
+    },
+    {
+      "id": "seo-5",
+      "gate": "seo",
+      "severity": "major",
+      "message": "Missing SEO artifact \"app/opengraph-image.tsx\".",
+      "file": "app/opengraph-image.tsx"
+    },
+    {
+      "id": "seo-6",
+      "gate": "seo",
+      "severity": "minor",
+      "message": "Missing SEO artifact \"public/schema.json\".",
+      "file": "public/schema.json"
+    },
+    {
+      "id": "seo-7",
+      "gate": "seo",
+      "severity": "minor",
+      "message": "Page declares no canonical URL.",
+      "file": "app/admin/belepes/page.tsx"
+    },
+    {
+      "id": "content-8",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/sorfozde\" has no matching page.",
+      "file": "app/(site)/page.tsx"
+    },
+    {
+      "id": "content-9",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/sorok\" has no matching page.",
+      "file": "app/(site)/page.tsx"
+    },
+    {
+      "id": "content-10",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/sorok\" has no matching page.",
+      "file": "app/admin/page.tsx"
+    },
+    {
+      "id": "content-11",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/\" has no matching page.",
+      "file": "app/not-found.tsx"
+    },
+    {
+      "id": "content-12",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/sorok\" has no matching page.",
+      "file": "components/sections/hero.tsx"
+    },
+    {
+      "id": "content-13",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/latogatas\" has no matching page.",
+      "file": "components/sections/hero.tsx"
+    },
+    {
+      "id": "content-14",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/latogatas\" has no matching page.",
+      "file": "components/sections/visit-band.tsx"
+    },
+    {
+      "id": "content-15",
+      "gate": "content",
+      "severity": "minor",
+      "message": "Internal link \"/\" has no matching page.",
+      "file": "components/site/navbar.tsx"
+    },
+    {
+      "id": "content-16",
+      "gate": "content",
+      "severity": "nit",
+      "message": "Grammar and tone require a human read-through before approval.",
+      "recommendation": "Proofread all shipped copy."
+    },
+    {
+      "id": "brand-17",
+      "gate": "brand",
+      "severity": "nit",
+      "message": "Brand alignment (voice, imagery, tone) needs a human sign-off.",
+      "recommendation": "Have the brand owner review before approval."
+    },
+    {
+      "id": "legal-18",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Required legal page \"Privacy Policy\" is not present.",
+      "recommendation": "Author the Privacy Policy page: Standard disclosure of data handling."
+    },
+    {
+      "id": "legal-19",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Required legal page \"Terms of Service\" is not present.",
+      "recommendation": "Author the Terms of Service page: Governs use of the site and services."
+    },
+    {
+      "id": "legal-20",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Required legal page \"Cookie Policy\" is not present.",
+      "recommendation": "Author the Cookie Policy page: Required where cookies or tracking are used."
+    },
+    {
+      "id": "legal-21",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Required legal page \"Adatkezelési Tájékoztató\" is not present.",
+      "recommendation": "Author the Adatkezelési Tájékoztató page: Hungarian GDPR data-processing notice."
+    },
+    {
+      "id": "legal-22",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Required legal page \"Cookie Tájékoztató\" is not present.",
+      "recommendation": "Author the Cookie Tájékoztató page: Hungarian cookie notice."
+    },
+    {
+      "id": "legal-23",
+      "gate": "legal",
+      "severity": "major",
+      "message": "Generated legal text requires review by a qualified legal professional.",
+      "recommendation": "Generated legal text is a draft only. It MUST be reviewed by a qualified legal professional before publication; CEF does not provide legal advice."
+    }
+  ]
+}
