@@ -1,24 +1,35 @@
-# Csupor Craft Beer — production stack.
+# Csupor Craft Beer — production stack for the Klivo Docker hosting platform.
 #
-# Conforms to CEF standards/operations/docker-compose.md and docker.md:
-#   ODK-08 container named <project>-<service>   ODK-09 network <project>-network
-#   ODK-10 named volume for durable data         ODK-11 restart policy
-#   ODK-12 resource limits                       DCP-03 secrets from .env
-#   DCP-07 healthcheck                           DCP-10 only the web service published
+# The platform runs this file verbatim after a strict security scan, and routes
+# to the container through Traefik's file provider. That fixes three things:
 #
-# One command from a clean checkout:  docker compose up -d --build
+#   * the container must be named `hosting_<slug>_web` — Traefik addresses it
+#     by name, not by a published port;
+#   * the ONLY network a site may join is its own `client_<slug>_net`, which is
+#     external and created by the platform. Any other network is rejected —
+#     that is how a site is kept off the shared platform/API network;
+#   * no Docker labels, no privileged options, no host bind mounts.
+#
+# The slug here is `csupor`, matching /app/clients/csupor/sites/csupor.
+#
+# The app listens on 3000 (see Dockerfile). Set **container_port = 3000** for
+# this site in the panel, otherwise Traefik will route to the platform default
+# of 80 and get nothing.
+#
+# For local development use the override, which publishes a host port and swaps
+# the external network for a local one:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 services:
-  web:
+  hosting_csupor_web:
     build:
       context: .
       dockerfile: Dockerfile
-    image: csupor-craft-beer:latest
-    container_name: csupor-web
+    container_name: hosting_csupor_web
     restart: unless-stopped
 
-    # Secrets and configuration are injected at runtime, never baked into the
-    # image (ODK-07). Copy .env.example to .env before the first run.
+    # Secrets are injected at runtime, never baked into the image. The panel
+    # writes this .env under Sites → site → Environment.
     env_file:
       - .env
     environment:
@@ -27,16 +38,19 @@ services:
       HOSTNAME: 0.0.0.0
       DATA_DIR: /data
 
-    ports:
-      - '3000:3000'
+    # `expose`, not `ports`: Traefik reaches the container over the client
+    # network by name. Publishing a host port would risk colliding with another
+    # site on the same VPS.
+    expose:
+      - '3000'
 
-    # The beer list must survive a redeploy — the container filesystem must not
-    # hold durable state (ODK-10).
+    # The beer list must survive a redeploy. A *named* volume is required here —
+    # the platform rejects host bind mounts.
     volumes:
       - csupor-data:/data
 
     networks:
-      - csupor-network
+      - client_csupor_net
 
     healthcheck:
       test:
@@ -46,7 +60,7 @@ services:
       start_period: 20s
       retries: 3
 
-    # A single container must not be able to exhaust the host (ODK-12).
+    # A single site must not be able to exhaust a shared host.
     deploy:
       resources:
         limits:
@@ -55,8 +69,6 @@ services:
         reservations:
           memory: 128M
 
-    # Logs go to stdout/stderr and are capped so they cannot fill the disk
-    # (ODK-16).
     logging:
       driver: json-file
       options:
@@ -68,6 +80,6 @@ volumes:
     name: csupor-data
 
 networks:
-  csupor-network:
-    name: csupor-network
-    driver: bridge
+  # Created and owned by the platform when the client is provisioned.
+  client_csupor_net:
+    external: true

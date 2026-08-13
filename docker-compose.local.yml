@@ -1,0 +1,23 @@
+# Local development override. NOT used by the hosting platform.
+#
+# Deliberately named `docker-compose.local.yml` rather than
+# `docker-compose.override.yml`: Compose auto-merges a file with the latter name,
+# which would silently publish a host port on the production VPS too. This one
+# only applies when passed explicitly:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# It publishes the app on http://localhost:3000 and replaces the platform's
+# external client network with a local bridge, so nothing needs provisioning
+# first.
+
+services:
+  hosting_csupor_web:
+    ports:
+      - '3000:3000'
+
+networks:
+  client_csupor_net:
+    external: false
+    name: csupor-local-net
+    driver: bridge
