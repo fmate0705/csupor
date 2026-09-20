@@ -31,15 +31,24 @@ nincs alapértelmezett érték, mert az kitalálhatóvá tenné a munkamenetet.
 
 ## Docker
 
+Helyi futtatás (ez publikálja a 3000-es portot és helyi hálózatot használ):
+
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
 
-Konténer `csupor-web`, hálózat `csupor-network`, kötet `csupor-data`, port
-`3000` — a CEF `standards/operations/docker.md` szerint. A kép többlépcsős,
-nem-root felhasználóval fut, és van healthcheckje (`/api/health`).
+A `docker-compose.yml` önmagában a **Klivo hosting platform szerződése**:
+konténer `hosting_csupor_web`, hálózat `client_csupor_net` (external), kötet
+`csupor-data`, port `3000`, publikált host port nélkül. A platform biztonsági
+ellenőrzést futtat rajta, és minden más hálózatot elutasít — részletek:
+[`deploy/DEPLOY.md`](deploy/DEPLOY.md).
 
-A sörlista a `csupor-data` köteten él, ezért **túléli az újratelepítést**.
+> A panelben a site **`container_port` értékét 3000-re kell állítani**, különben
+> a Traefik a 80-as portra irányít, és a site nem érhető el.
+
+A kép többlépcsős, nem-root felhasználóval fut, és van healthcheckje
+(`/api/health`). A sörlista a `csupor-data` köteten él, ezért **túléli az
+újratelepítést**.
 
 ---
 
@@ -84,6 +93,25 @@ Belépés a `.env`-ben megadott adatokkal. Hozzáadás, szerkesztés, sorrend,
 törlés, és a „Csapon" kapcsoló, ami eldönti, hogy egy sör a fő listában vagy az
 „Épp pihen" részben jelenik-e meg. A mentés azonnal élesedik.
 
+### Nyitva / zárva kártya — `/admin`
+
+A kezdőlap tetején megjelenő kis kártya. Három állapota van:
+
+| Állapot             | Mit lát a látogató                                  |
+| ------------------- | --------------------------------------------------- |
+| **Nyitva**          | „Most nyitva” + a megjegyzés                        |
+| **Zárva**           | „Most zárva” + az ok (pl. hogy fesztiválon vagytok) |
+| **Nem jelenik meg** | Semmit — a kártya eltűnik az oldalról               |
+
+Alapból **nem jelenik meg**. Ez szándékos: az oldal nem közöl nyitvatartást,
+mert nincs megbízható forrás, így egy alapértelmezetten „nyitva” kártya
+ellenőrizetlen állítást tenne a főoldalra. Amíg valaki be nem állítja, a főzde
+nem állít semmit.
+
+A megjegyzés „Nem jelenik meg” állapotban nem mentődik el, hogy egy régi
+fesztiválüzenet ne bukkanjon fel hónapokkal később. Az admin kiírja, mikor
+mentetted utoljára, és 24 óra után jelzi, hogy érdemes frissíteni.
+
 ### Fényképek
 
 Az eredetiket az `assets/source/` tartalmazza. Csere után:
@@ -105,6 +133,7 @@ pnpm verify                    # typecheck + lint + format + unit tesztek
 node scripts/validate.mjs http://localhost:3000        # 7 oldal × 5 képernyőméret
 node scripts/verify-admin.mjs http://localhost:3000 <user> <pass>
 node scripts/verify-map.mjs http://localhost:3000
+node scripts/verify-status.mjs http://localhost:3000 <user> <pass>
 node scripts/verify-persistence.mjs http://localhost:3000 csupor-web <user> <pass>
 ```
 
@@ -136,6 +165,18 @@ scripts/           eszközgenerálás és ellenőrző szkriptek
 ```
 
 ## Tudnivalók
+
+- **A mappa nevében lévő `!` megakadályozza a helyi production buildet.** A
+  webpack a `!` karaktert loader-szintaxisra tartja fenn, ezért a
+  `F:Klivo! PROJEKTEKCsupor` útvonalon a `pnpm build` elszáll. Megoldás: nevezd
+  át a szülőmappát (`!` nélkül), vagy használd helyben a
+  `npx next dev --turbopack` parancsot — a Docker build nem érintett, mert az
+  `/app` könyvtárban fut. Átnevezés után `pnpm install` kell újra, mert a pnpm
+  szimlinkek abszolút útvonalra mutatnak.
+- **A fotók 680 képpont szélesek**, ezért nagy méretben szükségszerűen lágyak.
+  A képfeldolgozás ezt a lehető legjobban kezeli, de éles hero-képhez a főzdétől
+  kellenek az eredeti, 1600px feletti felvételek. Részletek:
+  [`public/images/README.md`](public/images/README.md).
 
 - **Nincs webanalitika és nincs sütibanner** — mert nincs mit bekérni. Ha
   bekerül analitika, az adatkezelési tájékoztatót bővíteni kell.

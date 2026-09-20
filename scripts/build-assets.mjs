@@ -14,7 +14,7 @@
  * Re-run with `pnpm assets` after replacing anything in assets/source.
  */
 import sharp from 'sharp';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 
 const SRC = 'assets/source';
 const OUT = 'public/images';
@@ -37,12 +37,22 @@ const CONTACT_SHEET = {
 };
 
 /**
- * Each entry: which source, how wide it is ever rendered, and whether it earns
- * the upscale. `maxRender` is the largest CSS width the layout gives it; we
- * target 2x that, capped at 2x the source so we never invent detail wholesale.
+ * Each entry: which source, how wide it is ever rendered, and how far it may be
+ * upscaled.
+ *
+ * `maxRender` is the largest CSS width the layout gives it; we target 2x that
+ * for retina. `maxUpscale` caps how far past the source we will go — the
+ * supplied photographs are only 680px on the long edge, so this is the line
+ * between "soft" and "invented detail".
+ *
+ * The hero is the exception at 2.8x. It is the only full-bleed element
+ * (`sizes="100vw"`), so on a 1440px screen the browser was taking the 1360px
+ * master and stretching it again with its own cheap filter — a second resample
+ * on top of ours, which is what read as pixelation. One good lanczos pass to
+ * 1920 beats lanczos-to-1360 followed by browser-cubic-to-2880.
  */
 const IMAGES = [
-  { src: 'hero.webp', name: 'hero-terasz-sor', maxRender: 1600, upscale: true },
+  { src: 'hero.webp', name: 'hero-terasz-sor', maxRender: 1920, upscale: true, maxUpscale: 2.8 },
   { src: 'helyszin2.webp', name: 'terasz-esti', maxRender: 1200, upscale: true },
   { src: 'helyszin3.webp', name: 'terasz-nappali', maxRender: 900, upscale: true },
   { src: 'folyamat2.webp', name: 'sorfozes-kozben', maxRender: 720, upscale: true },
@@ -52,20 +62,36 @@ const IMAGES = [
   { src: 'csapat.webp', name: 'csapat', maxRender: 1200, upscale: true },
 ];
 
+/**
+ * Encoder quality — deliberately higher than the usual "good enough" settings.
+ *
+ * The sources are soft upscales, and a low-quality encoder pass adds its own
+ * blotching on exactly the smooth gradients (sky, out-of-focus background, beer
+ * foam) that an upscale already struggles with. The two artifacts compound and
+ * read as cheapness.
+ */
+const AVIF_QUALITY = 68;
+const WEBP_QUALITY = 82;
+
 const WIDTHS = [480, 768, 1024, 1440, 1920];
 
-async function emit(input, name, maxRender, upscale) {
+async function emit(input, name, maxRender, upscale, maxUpscale = 2) {
   const meta = await sharp(input).metadata();
-  const ceiling = upscale ? meta.width * 2 : meta.width;
+  const ceiling = upscale ? meta.width * maxUpscale : meta.width;
   const target = Math.min(maxRender * 2, ceiling);
 
   let base = sharp(input);
   if (target > meta.width) {
-    base = base.resize({ width: Math.round(target), kernel: 'lanczos3' }).sharpen({
-      sigma: 0.7,
-      m1: 0.4,
-      m2: 0.6,
-    });
+    // Sharpen BEFORE the upscale, not after.
+    //
+    // Sharpening an already-enlarged image amplifies the interpolation itself:
+    // every soft edge the resampler invented gets a hard halo, which is the
+    // "crunchy" look that reads as pixelation. A gentle unsharp at native
+    // resolution sharpens real detail instead, and the resampler carries that
+    // through smoothly.
+    base = base
+      .sharpen({ sigma: 0.5, m1: 0.25, m2: 0.3 })
+      .resize({ width: Math.round(target), kernel: 'lanczos3' });
   }
   const master = await base.toBuffer();
   const masterMeta = await sharp(master).metadata();
@@ -75,8 +101,14 @@ async function emit(input, name, maxRender, upscale) {
 
   for (const w of widths) {
     const resized = sharp(master).resize({ width: w, kernel: 'lanczos3' });
-    await resized.clone().avif({ quality: 62, effort: 6 }).toFile(`${OUT}/${name}-${w}.avif`);
-    await resized.clone().webp({ quality: 80, effort: 6 }).toFile(`${OUT}/${name}-${w}.webp`);
+    await resized
+      .clone()
+      .avif({ quality: AVIF_QUALITY, effort: 7 })
+      .toFile(`${OUT}/${name}-${w}.avif`);
+    await resized
+      .clone()
+      .webp({ quality: WEBP_QUALITY, effort: 6 })
+      .toFile(`${OUT}/${name}-${w}.webp`);
   }
 
   // A tiny blurred placeholder, inlined as the blurDataURL so there is no CLS
@@ -116,7 +148,13 @@ async function main() {
 
   // 2. Emit every image the site uses.
   for (const img of IMAGES) {
-    manifest[img.name] = await emit(`${SRC}/${img.src}`, img.name, img.maxRender, img.upscale);
+    manifest[img.name] = await emit(
+      `${SRC}/${img.src}`,
+      img.name,
+      img.maxRender,
+      img.upscale,
+      img.maxUpscale,
+    );
     console.log(`  ${img.name.padEnd(20)} ${manifest[img.name].width}px master`);
   }
   const derivedRender = {
@@ -199,6 +237,27 @@ async function main() {
     ])
     .jpeg({ quality: 86, mozjpeg: true })
     .toFile('public/og.jpg');
+
+  // 6. Remove variants left behind by an earlier run.
+  //
+  // Widths are derived from the source size and the upscale ceiling, so
+  // changing either renames every file. Without this the old set lingers in
+  // public/images and ships to production as dead weight.
+  const expected = new Set();
+  for (const [name, entry] of Object.entries(manifest)) {
+    for (const w of entry.widths) {
+      expected.add(`${name}-${w}.avif`);
+      expected.add(`${name}-${w}.webp`);
+    }
+  }
+  let removed = 0;
+  for (const file of await readdir(OUT)) {
+    if (!/.(avif|webp)$/.test(file)) continue;
+    if (expected.has(file)) continue;
+    await rm(`${OUT}/${file}`);
+    removed += 1;
+  }
+  if (removed > 0) console.log(`  removed ${removed} stale variant(s)`);
 
   // 6. Emit the manifest as a TypeScript module rather than JSON: it gives
   // Photo a literal type for the image names (so a typo is a compile error,

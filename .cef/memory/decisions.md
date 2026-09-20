@@ -163,20 +163,50 @@ click ("Térkép betöltése") — the component is already structured for it.
 
 ---
 
-## [2026-08-08] Docker targets port 3000, not the generator's port 80
+## [2026-08-08] Docker naming follows the hosting platform, not the operations standard
 
-**Context.** `cef generate` stage 8 emits a deploy bundle for a Traefik-fronted
-host: port 80, container `hosting_<slug>_web`, external network
-`client_<slug>_net`.
+**Superseded the first attempt — corrected after a rejected deploy.**
 
-**Decision.** Replaced with the `standards/operations/docker.md` contract:
-`PORT=3000` (ODK-06), container `csupor-web` (ODK-08), network
-`csupor-network` (ODK-09), named volume `csupor-data` (ODK-10).
+**What went wrong.** "Container naming conventions from CEF" was read as
+`standards/operations/docker.md` (ODK-08 `<project>-<service>`, ODK-09
+`<project>-network`), so the stack shipped as `csupor-web` on `csupor-network`.
+The platform rejected it:
 
-**Reasoning.** Explicit user instruction (precedence 1) asked for port 3000 and
-CEF container naming, which is also what the operations standard specifies. The
-generated Dockerfile additionally lacked a non-root user, a healthcheck,
-resource limits and a frozen lockfile; the replacement has all four.
+> service "web" attaches to disallowed network "csupor-network"
+
+**The binding constraint.** The Klivo platform validates every client compose
+file (`webhosting/docker-web-1/api/src/services/composeValidator.ts`) and fails
+closed. It derives the single allowed network from the *site directory name* —
+`client_<slug>_net` — precisely so a site cannot rejoin the shared network that
+hosts the platform API and database. There is no override.
+
+**Decision.** The compose now matches the platform contract exactly:
+
+- service and `container_name`: `hosting_csupor_web` (Traefik addresses it by
+  name through its file provider)
+- network: `client_csupor_net`, `external: true`, and nothing else
+- `expose: '3000'` rather than a published host port — publishing would risk
+  colliding with another site on the same VPS
+- no Docker labels, no bind mounts, no privileged options
+
+**What was kept.** Port 3000 (the explicit user instruction; the platform's
+`container_port` is configurable per site and must be set to 3000 in the panel),
+the named volume `csupor-data`, the healthcheck, resource limits, the non-root
+user and the frozen lockfile — none of which the generator's bundle had, and
+none of which the validator objects to. Named volumes are explicitly safe: the
+validator only rejects host bind mounts and the Docker socket.
+
+**Verified, not assumed.** The platform's own validator was run against the
+final file in a directory named `csupor` to mirror
+`/app/clients/csupor/sites/csupor`; it returned `valid: true, errors: none`.
+
+**Local development.** `docker-compose.local.yml` publishes the host port and
+swaps in a local bridge network. It is deliberately *not* named
+`docker-compose.override.yml`, which Compose would merge automatically — that
+would publish a host port on the production VPS too.
+
+**If the client slug ever changes,** `container_name` and the network name must
+change with it, or the deploy is rejected again.
 
 **Also.** pnpm is installed from npm at a pinned version rather than through
 corepack — the corepack bundled with `node:22.12.0-alpine` fails signature
@@ -243,3 +273,93 @@ production build, not fixed:
 - **`seo`: admin pages declare no canonical URL.** They are deliberately
   `noindex, nofollow`; advertising a canonical for an auth-gated page would
   only invite crawling.
+
+---
+
+## [2026-09-20] Pixelation: the sources are 680px, and the pipeline made it worse
+
+**Investigated because the brewery believed higher-resolution originals had
+been supplied.** They are not on this machine. Searched `assets/source`, the
+whole `F:\Klivo` tree, every user folder, all drives, both recycle bins and git
+history. The images have been 680px on the long edge since the **Base Commit**,
+and `hero.webp` is a *lossless* WebP at 1.56 bytes/pixel — the signature of an
+already-downscaled image re-saved losslessly, i.e. exported at display size
+rather than shot at it.
+
+**What actually caused the visible pixelation.** Three compounding faults, two
+of them ours:
+
+1. `hero.webp` is 680x510, and the pipeline capped every master at 2x the
+   source (1360px). The hero is the only `sizes="100vw"` element, so on a
+   1440px screen the browser took the 1360px file and stretched it *again*
+   with its own cheap filter — a second resample on top of ours. End to end
+   that is 680 → 2880 device px on a 2x display.
+2. The unsharp mask ran **after** the upscale. Sharpening an enlarged image
+   amplifies the interpolation itself: every soft edge the resampler invented
+   gets a halo. That is the "crunchy" look people read as pixelation.
+3. AVIF quality 62 on soft upscaled content adds blotching to exactly the
+   smooth gradients (sky, bokeh, foam) an upscale already struggles with.
+
+**Fixed** in `scripts/build-assets.mjs`: a per-image `maxUpscale` (hero 2.8x to
+reach 1920 so the browser barely stretches; everything else stays at 2x),
+sharpening moved before the resize and made gentler, AVIF 62 → 68 and WebP
+80 → 82, and a cleanup pass that deletes variants an earlier run left behind.
+The hero's largest AVIF went 128 KB → 190 KB, which is a fair trade for the
+LCP image.
+
+**This improves it; it cannot fix it.** No process recovers detail that was
+never in a 680px file. Genuinely sharp photography needs originals from the
+brewery at 1600px+, after which `maxUpscale` should be dropped back to 1 for
+the hero.
+
+---
+
+## [2026-09-20] Open/closed card starts hidden, not open
+
+**Context.** The brewery asked for a hero card showing whether they are open,
+with a free-text reason when they are not ("we're at a festival in Eger").
+
+**Decision.** Three states — `hidden`, `open`, `closed` — stored in
+`data/status.json` beside the beer list, with `hidden` as the default.
+
+**Reasoning.** A boolean defaulting to "open" would have put an unverified
+claim back on the front page the moment this shipped, undoing the earlier
+decision to publish no opening hours at all (see the opening-hours entry
+above). `hidden` renders nothing, so the brewery asserts nothing until someone
+deliberately flips it. It also gives them a way to retire the card without
+leaving a stale "Most nyitva" up.
+
+**Supporting details.**
+- The note is discarded when the card is hidden, so a festival message cannot
+  resurface months later when the card is switched back on.
+- The admin shows when the state was last saved and flags it after 24 hours —
+  a status card nobody updates is worse than no status card.
+- A corrupt or invalid `status.json` falls back to `hidden` rather than
+  throwing: the hero renders this, and a bad read must not take the home page
+  down.
+- No pill and no eyebrow, per the brief: it is a small plaque — display-face
+  state, quiet note beneath, and a 2px rule down the left edge carrying the
+  colour. Colour is never the only signal; the words say it too (D-038).
+- Covered by `tests/status-store.test.ts` (8 unit tests) and
+  `scripts/verify-status.mjs` (9 end-to-end checks through the real admin form).
+
+---
+
+## [2026-09-20] The `!` in the folder path breaks local production builds
+
+`F:\Klivo\! PROJEKTEK\Csupor` cannot run `next build`. Webpack reserves `!` for
+its loader syntax and rejects any absolute path containing one:
+
+> configuration.context: The provided value "F:\Klivo\! PROJEKTEK\Csupor"
+> contains exclamation mark (!) which is not allowed
+
+**Scope.** Local `pnpm build` only. Verified by copying the identical tree to a
+path without `!` and building successfully, and `next dev --turbopack` works in
+place because Turbopack is not webpack. Docker is unaffected — it builds inside
+`/app`.
+
+**Fix:** rename the parent folder (drop the `!`), or keep using
+`next dev --turbopack` locally and let Docker produce production builds.
+
+Renaming the folder also invalidates `node_modules`: pnpm's symlinks are
+absolute, so `pnpm install` must be re-run afterwards.

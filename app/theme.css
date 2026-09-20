@@ -309,3 +309,31 @@ html.js [data-reveal][data-revealed='true'] {
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
 }
+
+/* --------------------------------------------------------------------------
+   Open/closed card — the slow halo behind the "open" dot.
+   Calm on purpose: one soft expansion every 2.8s, never a blink. It is the
+   only thing on the page that moves on its own, so it has to stay quiet.
+   -------------------------------------------------------------------------- */
+
+@keyframes status-halo {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+:where(.animate-status-halo) {
+  animation: status-halo 2.8s var(--cef-ease-decelerate) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.animate-status-halo) {
+    animation: none;
+  }
+}

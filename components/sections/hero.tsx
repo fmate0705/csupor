@@ -1,5 +1,6 @@
 import { ArrowRight, MapPin } from 'lucide-react';
 
+import { OpenStatus } from '@/components/sections/open-status';
 import { ButtonLink } from '@/components/ui/button';
 import { Photo } from '@/components/ui/photo';
 import { business } from '@/content/business';
@@ -16,7 +17,7 @@ import { business } from '@/content/business';
  * secondary (D-042, D-048). The scrim is a two-stop gradient rather than a flat
  * overlay so the glass stays bright while the type below it stays at AA.
  */
-export function Hero() {
+export async function Hero() {
   return (
     <section className="on-dark relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-background pb-20 pt-32 sm:pb-24 lg:min-h-[92vh] lg:pb-28">
       <div className="grain absolute inset-0 -z-10">
@@ -85,6 +86,16 @@ export function Hero() {
               <MapPin aria-hidden className="h-4 w-4" />
               Hogyan találsz ide
             </ButtonLink>
+          </div>
+
+          {/*
+            Placed after the actions, not before them: someone reading the hero
+            decides "what is this" then "can I go now". It also keeps the
+            headline block uninterrupted. Renders nothing while the brewery has
+            not set a state.
+          */}
+          <div className="mt-8">
+            <OpenStatus />
           </div>
         </div>
       </div>

@@ -16,6 +16,8 @@ import {
 } from '@/lib/auth/session';
 import { beerInputSchema } from '@/lib/beers/schema';
 import { createBeer, deleteBeer, moveBeer, updateBeer } from '@/lib/beers/store';
+import { statusInputSchema } from '@/lib/status/schema';
+import { writeStatus } from '@/lib/status/store';
 
 /**
  * Server Actions for the admin panel.
@@ -35,6 +37,13 @@ async function requireSession(): Promise<void> {
   const store = await cookies();
   const session = await verifySessionToken(store.get(SESSION_COOKIE)?.value);
   if (!session) redirect('/admin/belepes');
+}
+
+/** Republishes the surfaces that render the open/closed card. */
+function revalidateStatusSurfaces(): void {
+  // The hero is on the home page only; /admin re-reads it to show the form.
+  revalidatePath('/');
+  revalidatePath('/admin');
 }
 
 /** Republishes every surface that renders the beer list. */
@@ -196,4 +205,45 @@ export async function moveBeerAction(formData: FormData): Promise<void> {
   } catch (error) {
     console.error('[beers] reorder failed', error);
   }
+}
+
+// ---------------------------------------------------------------- status
+
+/**
+ * Sets the open/closed card shown in the hero.
+ *
+ * "Nem jelenik meg" is a first-class option, not an afterthought: the site
+ * publishes no opening hours, so the brewery must be able to say nothing at all
+ * rather than leave a stale "Most nyitva" on the front page.
+ */
+export async function updateStatusAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireSession();
+
+  const parsed = statusInputSchema.safeParse({
+    mode: formData.get('mode'),
+    note: String(formData.get('note') ?? ''),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Érvénytelen állapot.' };
+  }
+
+  try {
+    await writeStatus(parsed.data);
+  } catch (error) {
+    console.error('[status] save failed', error);
+    return { error: 'Nem sikerült menteni. Ellenőrizd, hogy a szerver írhatja az adatmappát.' };
+  }
+
+  revalidateStatusSurfaces();
+
+  const confirmation = {
+    hidden: 'A kártya mostantól nem jelenik meg az oldalon.',
+    open: 'Mentve — a kezdőlapon „Most nyitva” látszik.',
+    closed: 'Mentve — a kezdőlapon „Most zárva” látszik.',
+  } as const;
+
+  return { success: confirmation[parsed.data.mode] };
 }

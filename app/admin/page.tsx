@@ -5,8 +5,10 @@ import { ExternalLink } from 'lucide-react';
 import { logoutAction } from '@/app/admin/actions';
 import { BeerAdminList } from '@/app/admin/beer-admin-list';
 import { NewBeerForm } from '@/app/admin/new-beer-form';
+import { StatusForm } from '@/app/admin/status-form';
 import { Button } from '@/components/ui/button';
 import { listBeers } from '@/lib/beers/store';
+import { readStatus } from '@/lib/status/store';
 
 export const metadata: Metadata = {
   title: 'Söradminisztráció',
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const beers = await listBeers();
+  const [beers, status] = await Promise.all([listBeers(), readStatus()]);
   const onTapCount = beers.filter((beer) => beer.onTap).length;
 
   return (
@@ -33,7 +35,7 @@ export default async function AdminPage() {
             height={204}
             className="h-6 w-auto"
           />
-          <span className="text-sm text-muted">Söradminisztráció</span>
+          <span className="text-sm text-muted">Adminisztráció</span>
 
           <div className="ml-auto flex items-center gap-2">
             <Link
@@ -56,8 +58,15 @@ export default async function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-[1000px] px-5 py-10 sm:px-8 sm:py-14">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h1 className="font-display text-3xl">Söreink</h1>
+        {/* The visible page title lives in the header bar; this keeps the
+            document outline correct without repeating it on screen. */}
+        <h1 className="sr-only">Csupor Craft Beer adminisztráció</h1>
+
+        {/* First, because it is the only thing here that goes stale by the hour. */}
+        <StatusForm status={status} />
+
+        <div className="mt-14 flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-3xl">Söreink</h2>
           <p className="text-sm text-muted">
             <strong className="font-semibold text-foreground">{onTapCount}</strong> csapon ·{' '}
             {beers.length} összesen
@@ -70,7 +79,7 @@ export default async function AdminPage() {
 
         <NewBeerForm />
 
-        <h2 className="mt-14 font-display text-xl">A lista</h2>
+        <h3 className="mt-14 font-display text-xl">A lista</h3>
         <BeerAdminList beers={beers} />
       </main>
     </div>

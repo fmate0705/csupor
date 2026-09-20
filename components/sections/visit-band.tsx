@@ -106,4 +106,3 @@ export function VisitBand({ variant = 'full' }: { variant?: 'full' | 'compact' }
     </section>
   );
 }
-
