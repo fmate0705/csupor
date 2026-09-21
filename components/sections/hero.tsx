@@ -74,7 +74,16 @@ export async function Hero() {
             méterrel arrébb főztünk — és hetente változik.
           </p>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        </div>
+
+        {/*
+          Actions and the open/closed card share one row spanning the full
+          container: buttons hug the left edge, the card the right. Below `lg`
+          they stack, card last. The card renders nothing while the brewery has
+          not set a state, leaving the buttons alone on the left.
+        */}
+        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <ButtonLink href="/sorok" variant="gold" size="lg">
               Mi van a csapon
               <ArrowRight
@@ -88,15 +97,7 @@ export async function Hero() {
             </ButtonLink>
           </div>
 
-          {/*
-            Placed after the actions, not before them: someone reading the hero
-            decides "what is this" then "can I go now". It also keeps the
-            headline block uninterrupted. Renders nothing while the brewery has
-            not set a state.
-          */}
-          <div className="mt-8">
-            <OpenStatus />
-          </div>
+          <OpenStatus />
         </div>
       </div>
     </section>
